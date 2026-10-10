@@ -1,27 +1,29 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using AIChara;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using System.Diagnostics;
-using System.IO.Ports;
 using UnityEngine.UI;
 using IllusionUtility.GetUtility;
 
-namespace HS2_SexRobotController
+namespace HS2_HandyController
 {
     [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    [DefaultExecutionOrder(32000)]
 
-    public class HS2_SexRobotController : BaseUnityPlugin
+    public class HS2_HandyController : BaseUnityPlugin
     {
         public const string pluginGUID = "hs2robotics.HS2SexRobotController";
-        public const string pluginName = "HS2_SexRobotController";
-        public const string pluginVersion = "1.7";
+        public const string pluginName = "HS2_HandyController";
+        public const string pluginVersion = "1.48";
 
         public static HScene hScene;
         public bool inHScene = false;
@@ -33,6 +35,7 @@ namespace HS2_SexRobotController
         public Transform malePenisTip;
         public Transform malePenisLeftBall;
         public Transform malePenisRightBall;
+        public Transform femaleMouth;
         public Transform femaleMouthLipsUpper;
         public Transform femaleMouthLipsLower;
         public Transform femaleMouthLeft;
@@ -49,6 +52,12 @@ namespace HS2_SexRobotController
         public Transform femaleMiddleFingerRight;
         public Transform femaleRingFingerRight;
         public Transform femaleHandRight;
+        public Transform femaleFootLeft;
+        public Transform femaleFootRight;
+        public Transform femaleToesLeft;
+        public Transform femaleToesRight;
+        public Transform partnerMouth;
+        public Transform vibratorPoint;
         public Transform femaleLegLeft;
         public Transform femaleKneeLeft;
         public Transform femaleLegRight;
@@ -66,7 +75,16 @@ namespace HS2_SexRobotController
             VAGINALSWAP,
             ORALSWAP,
             RIGHTHANDSWAP,
-            INTERCRURALSWAP
+            INTERCRURALSWAP,
+            NONE,
+            KISS,
+            HANDVAGINA,
+            MOUTHVAGINA,
+            MOUTHANUS,
+            HANDBREAST,
+            HANDHIP,
+            VIBRATOR,
+            FOOT
         }
 
         femaleTargetType currentFemaleTargetType;
@@ -78,14 +96,14 @@ namespace HS2_SexRobotController
             // Honey Select 2 Service HScene Category
             {"Blowjob", femaleTargetType.ORAL},
             {"Handjob", femaleTargetType.LEFTHAND},
-            //{"Glans Tease", femaleTargetType.},
+            {"Glans Tease", femaleTargetType.ORAL},
             {"Boobjob", femaleTargetType.BREASTS},
             {"Licking Boobjob", femaleTargetType.BREASTS},
             {"Sucking Boobjob", femaleTargetType.BREASTS},
             {"Exhausted Handjob", femaleTargetType.RIGHTHAND},
             {"Exhausted Blowjob", femaleTargetType.ORAL},
             {"Standing Handjob", femaleTargetType.RIGHTHAND},
-            //{"No-Hands Tip Licking", femaleTargetType.},
+            {"No-Hands Tip Licking", femaleTargetType.ORAL},
             {"No-Hands Blowjob", femaleTargetType.ORAL},
             {"Deepthroat", femaleTargetType.ORAL},
             {"Standing Boobjob", femaleTargetType.BREASTS},
@@ -105,6 +123,27 @@ namespace HS2_SexRobotController
             {"Wall Irramatio", femaleTargetType.ORAL},
             {"Chair Irramatio", femaleTargetType.ORAL},
             {"Pet Blowjob", femaleTargetType.ORAL},
+            {"Forceful BJ", femaleTargetType.ORAL},
+            {"Sitting Handjob", femaleTargetType.LEFTHAND},
+            {"Titjob", femaleTargetType.BREASTS},
+            {"Tip Lick (No Hands)", femaleTargetType.ORAL},
+            {"Sitting Titjob", femaleTargetType.BREASTS},
+            {"Stockade Femdom BJ", femaleTargetType.ORAL},
+            {"Kiss", femaleTargetType.KISS},
+            {"Breast Play", femaleTargetType.HANDBREAST},
+            {"Fingering", femaleTargetType.HANDVAGINA},
+            {"Cunnilingus", femaleTargetType.MOUTHVAGINA},
+            {"Rimjob", femaleTargetType.MOUTHANUS},
+            {"Anal Vibrator", femaleTargetType.VIBRATOR},
+            {"Standing Kiss", femaleTargetType.KISS},
+            {"Standing Cunnilingus", femaleTargetType.MOUTHVAGINA},
+            {"Breast Massage (Behind)", femaleTargetType.HANDBREAST},
+            {"Squatting Breast Massage", femaleTargetType.HANDBREAST},
+            {"Kiss Grope", femaleTargetType.HANDBREAST},
+            {"Reclining Masturbation", femaleTargetType.HANDVAGINA},
+            {"Desk Spank", femaleTargetType.HANDHIP},
+            {"Chair Spank", femaleTargetType.HANDHIP},
+            {"All-Fours Foreplay", femaleTargetType.HANDVAGINA},
             
             // Honey Select 2 Insert HScene Category
             {"Missionary", femaleTargetType.VAGINAL},
@@ -152,15 +191,28 @@ namespace HS2_SexRobotController
             {"Wall-Pressed Behind", femaleTargetType.VAGINAL},
             {"Pet Sex", femaleTargetType.VAGINAL},
             {"Mating Press", femaleTargetType.VAGINAL},
+            {"Domination Reverse Cowgirl", femaleTargetType.VAGINAL},
+            {"Stockade Femdom Sex", femaleTargetType.VAGINAL},
+            {"Side", femaleTargetType.VAGINAL},
+            {"Standing Doggy", femaleTargetType.VAGINAL},
+            {"Standing Missionary", femaleTargetType.VAGINAL},
+            {"Standing Wall Doggy", femaleTargetType.VAGINAL},
+            {"Table Missionary", femaleTargetType.VAGINAL},
+            {"Missionary Press", femaleTargetType.VAGINAL},
+            {"Counter Doggy", femaleTargetType.VAGINAL},
+            {"Squatting Sex", femaleTargetType.VAGINAL},
+            {"Suspended Sex", femaleTargetType.VAGINAL},
+            {"Standing Tied", femaleTargetType.VAGINAL},
+            {"Standing Squeeze", femaleTargetType.VAGINAL},
 
             // Honey Select 2 Woman-led HScene Category
             {"Nipple Licking Blowjob", femaleTargetType.RIGHTHAND},
             {"Rimjob + Handjob", femaleTargetType.RIGHTHAND},
-            //{"Standing Footjob", femaleTargetType.},
-            //{"Sitting Footjob", femaleTargetType.},
+            {"Standing Footjob", femaleTargetType.FOOT},
+            {"Sitting Footjob", femaleTargetType.FOOT},
             {"All Fours Handjob", femaleTargetType.RIGHTHAND},
-            //{"Restrained Blowjob", femaleTargetType.ORAL}, // Already in the Dictionary above
-            //{"Chair Restraint Footjob", femaleTargetType.},
+            {"Chair Restraint Footjob", femaleTargetType.FOOT},
+            {"Face Sit Cunnilingus", femaleTargetType.MOUTHVAGINA},
             //{"Cowgirl", femaleTargetType.VAGINAL}, // Already in the Dictionary above
             //{"Reverse Cowgirl", femaleTargetType.VAGINAL}, // Already in the Dictionary above
             {"Reverse Piledriver", femaleTargetType.VAGINAL},
@@ -191,34 +243,47 @@ namespace HS2_SexRobotController
             {"69", femaleTargetType.ORAL}
         };
 
-        private SerialPort serialPort;
         private Stopwatch sw = Stopwatch.StartNew();
         private ConfigEntry<KeyboardShortcut> toggleSerialPortConnection { get; set; }
         private ConfigEntry<KeyboardShortcut> strokeLengthMultiplierIncrease { get; set; }
         private ConfigEntry<KeyboardShortcut> strokeLengthMultiplierDecrease { get; set; }
-        public string[] serialPorts = { "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM10", "COM11", "COM12", "COM13", "COM14", "COM15", "COM16", "COM17", "COM18", "COM19", "COM20", "COM21", "COM22", "COM23", "COM24", "COM25", "COM26", "COM27", "COM28", "COM29", "COM30" };
-        public ConfigEntry<string> serialPortConfig;
         public ConfigEntry<float> sexRobotUpdateFrequencyConfig;
-        public ConfigEntry<string> serialPortStatus;
         public ConfigEntry<bool> serialPortConnected;
         public ConfigEntry<bool> diagnosticsConfig;
+        public ConfigEntry<string> handyConnectionKey;
+        public ConfigEntry<string> handyStatus;
+        public ConfigEntry<bool> handyInvertStroke;
+        public ConfigEntry<float> handySendInterval;
+        HandyDevice handy;
+        readonly List<AnimHold> animHolds = new List<AnimHold>();
+        bool loggedAnimDelay;
+        string liveFolder;
+        float liveRaw = -1f;
+        int liveSent = -1;
+        float strokeLimited = 0.5f;
+        float strokeLimitAt = -1f;
+        bool haveStrokeLimit;
+        float strokeCenter = 0.5f;
+        bool haveStrokeCenter;
+        float liveWriteAt;
+        float liveMaxDn;
+        string surveyScene = "";
+        string surveyContact = "";
+        float surveyRawMin = 1f;
+        float surveyRawMax = 0f;
+        int surveySentMin = 100;
+        int surveySentMax = 0;
+        int surveySamples;
+        float surveyDn;
+        string liveText = "";
+        readonly float[] livePrevNorm = new float[4];
+        readonly bool[] liveHavePrev = new bool[4];
+        bool suppressConnectionEvent;
+        static HS2_HandyController instance;
+        ConfigurationManagerAttributes handyConnectAttributes;
+        ConfigurationManagerAttributes handyStatusAttributes;
         public ConfigEntry<float> robotL0Multiplier;
         public ConfigEntry<float> robotL0MultiplierStepValue;
-        public ConfigEntry<float> robotL0Min;
-        public ConfigEntry<float> robotL0Max;
-        public ConfigEntry<float> robotL1Min;
-        public ConfigEntry<float> robotL1Max;
-        public ConfigEntry<float> robotL2Min;
-        public ConfigEntry<float> robotL2Max;
-        public ConfigEntry<float> robotR0Min;
-        public ConfigEntry<float> robotR0Max;
-        public ConfigEntry<float> robotR1Min;
-        public ConfigEntry<float> robotR1Max;
-        public ConfigEntry<float> robotR2Min;
-        public ConfigEntry<float> robotR2Max;
-        public float autoRangeMin;
-        public float autoRangeMid;
-        public float autoRangeMax;
         public static bool updateRobotPosition = false;
         public static bool buttonConnectRobotClicked = false;
         public static bool buttonDisconnectRobotClicked = false;
@@ -235,37 +300,88 @@ namespace HS2_SexRobotController
 
         public void Awake()
         {
-            HarmonyLib.Harmony.CreateAndPatchAll(typeof(HS2_SexRobotController));
+            HarmonyLib.Harmony.CreateAndPatchAll(typeof(HS2_HandyController));
+            instance = this;
+            handy = new HandyDevice(message => Logger.LogInfo(message));
+            gameObject.AddComponent<HandyPoseClock>().Owner = this;
+            liveFolder = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "BepInEx", "plugins", "HS2_HandyController", "live"));
+            try
+            {
+                Directory.CreateDirectory(liveFolder);
+                File.WriteAllText(Path.Combine(liveFolder, "status.txt"), pluginVersion + " loaded\r\n");
+                File.WriteAllText(Path.Combine(liveFolder, "scenes.txt"), pluginVersion + " scene survey\r\n");
+            }
+            catch (Exception)
+            {
+            }
 
             // Setup config file entries used in the in game menu
             // Creates a config file in BepInEx/config named hs2robotics.HS2SexRobotController.cfg
             strokeLengthMultiplierIncrease = Config.Bind("Sex Robot Limits", "Increase Stroke Multiplier", new KeyboardShortcut(KeyCode.Z));
             strokeLengthMultiplierDecrease = Config.Bind("Sex Robot Limits", "Decrease Stroke Multiplier", new KeyboardShortcut(KeyCode.X));
-            robotL0Multiplier = Config.Bind("Sex Robot Limits", "Sex Robot (L0) Stroke Multiplier", 1.0f, new ConfigDescription("Sex Robot (L0) Stroke Multiplier", new AcceptableValueRange<float>(0.25f, 10.0f)));
+            robotL0Multiplier = Config.Bind("Sex Robot Limits", "Sex Robot (L0) Stroke Multiplier", 1.0f, new ConfigDescription("Widens the stroke of the body part this scene uses. 1 keeps the measured motion. The result stays between 0 and 1.", new AcceptableValueRange<float>(0.25f, 10.0f)));
             robotL0MultiplierStepValue = Config.Bind("Sex Robot Limits", "Sex Robot (L0) Stroke Multiplier Step Value", 0.25f, new ConfigDescription("Sex Robot (L0) Stroke Multiplier Step Value", new AcceptableValueRange<float>(0.01f, 1.0f)));
-            robotL0Min = Config.Bind("Sex Robot Limits", "Sex Robot (L0) Up/Down Min", 0.0f, new ConfigDescription("Sex Robot (L0) Up/Down Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotL0Max = Config.Bind("Sex Robot Limits", "Sex Robot (L0) Up/Down Max", 1.0f, new ConfigDescription("Sex Robot (L0) Up/Down Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
-            robotL1Min = Config.Bind("Sex Robot Limits", "Sex Robot (L1) Forward/Backward Min", 0.0f, new ConfigDescription("Sex Robot (L1) Forward/Backward Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotL1Max = Config.Bind("Sex Robot Limits", "Sex Robot (L1) Forward/Backward Max", 1.0f, new ConfigDescription("Sex Robot (L1) Forward/Backward Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
-            robotL2Min = Config.Bind("Sex Robot Limits", "Sex Robot (L2) Left/Right Min", 0.0f, new ConfigDescription("Sex Robot (L2) Left/Right Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotL2Max = Config.Bind("Sex Robot Limits", "Sex Robot (L2) Left/Right Max", 1.0f, new ConfigDescription("Sex Robot (L2) Left/Right Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
-            robotR0Min = Config.Bind("Sex Robot Limits", "Sex Robot (R0) Twist Min", 0.0f, new ConfigDescription("Sex Robot (R0) Twist Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotR0Max = Config.Bind("Sex Robot Limits", "Sex Robot (R0) Twist Max", 1.0f, new ConfigDescription("Sex Robot (R0) Twist Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
-            robotR1Min = Config.Bind("Sex Robot Limits", "Sex Robot (R1) Roll Min", 0.0f, new ConfigDescription("Sex Robot (R1) Roll Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotR1Max = Config.Bind("Sex Robot Limits", "Sex Robot (R1) Roll Max", 1.0f, new ConfigDescription("Sex Robot (R1) Roll Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
-            robotR2Min = Config.Bind("Sex Robot Limits", "Sex Robot (R2) Pitch Min", 0.0f, new ConfigDescription("Sex Robot (R2) Pitch Min", new AcceptableValueRange<float>(0.0f, 0.5f)));
-            robotR2Max = Config.Bind("Sex Robot Limits", "Sex Robot (R2) Pitch Max", 1.0f, new ConfigDescription("Sex Robot (R2) Pitch Max", new AcceptableValueRange<float>(0.5f, 1.0f)));
             toggleSerialPortConnection = Config.Bind("Sex Robot Connection", "Connect/Disconnect Sex Robot Hotkey", new KeyboardShortcut(KeyCode.S, KeyCode.LeftShift));
-            (serialPortConfig = Config.Bind("Sex Robot Connection", "Serial Port For Sex Robot", serialPorts[2], new ConfigDescription("SerialPorts", new AcceptableValueList<string>(serialPorts)))).SettingChanged += (s, e) => { UpdateSerialPort(); };
-            sexRobotUpdateFrequencyConfig = Config.Bind("Sex Robot Connection", "Sex Robot Update Frequency", 30.0f, new ConfigDescription("SexRobotUpdateFrequencies", new AcceptableValueRange<float>(1.0f, 120.0f)));
-            serialPortStatus = Config.Bind("Sex Robot Connection", "Serial Port Status Information", "Serial Port is not connected.");
-            serialPortStatus.Value = serialPortConfig.Value + " port is disconnected.";
-            (serialPortConnected = Config.Bind("Sex Robot Connection", "Connection To Sex Robot Via Serial Port", false)).SettingChanged += (s, e) => { UpdateSerialPortConnection(); };
+            sexRobotUpdateFrequencyConfig = Config.Bind("Sex Robot Connection", "Sex Robot Update Frequency", 30.0f, new ConfigDescription("How often the scene is sampled, in updates per second.", new AcceptableValueRange<float>(1.0f, 120.0f)));
+            (serialPortConnected = Config.Bind("Sex Robot Connection", "Connection To Sex Robot Via Serial Port", false, new ConfigDescription("Saves whether the Handy should connect on the next launch.", null, new ConfigurationManagerAttributes { Browsable = false }))).SettingChanged += (s, e) => { UpdateSerialPortConnection(); };
             diagnosticsConfig = Config.Bind("General", "BepInEx Debug Console Output", false);
+            handyConnectionKey = Config.Bind("Handy", "Connection Key", "", new ConfigDescription("Device connection key from the Handy app. Saved in BepInEx/config and loaded the next time the game starts.", null, new ConfigurationManagerAttributes { Order = 30 }));
+            handyConnectAttributes = new ConfigurationManagerAttributes { CustomDrawer = DrawHandyConnectButton, HideDefaultButton = true, Order = 20 };
+            Config.Bind("Handy", "Connect", "", new ConfigDescription("Connect or disconnect the Handy.", null, handyConnectAttributes));
+            handyStatusAttributes = new ConfigurationManagerAttributes { ReadOnly = true, Order = 10 };
+            handyStatus = Config.Bind("Handy", "Connection Status", "Disconnected", new ConfigDescription("Shows Connected or Disconnected. Updated by the plugin.", null, handyStatusAttributes));
+            handyInvertStroke = Config.Bind("Handy", "Invert Stroke", false, "Flip the stroke. Off matches the Handy: 0 is the bottom and 100 is the top, and the game's upward stroke goes to the top.");
+            handySendInterval = Config.Bind("Handy", "Send Interval Seconds", 0.25f, new ConfigDescription("The Handy cloud API allows 4 updates a second. The plugin sends at that rate.", new AcceptableValueRange<float>(0.25f, 2.0f)));
+            handyConnectionKey.SettingChanged += (s, e) => { OnHandyCredentialChanged(); };
+
+            if (string.IsNullOrEmpty(handyConnectionKey.Value))
+            {
+                Logger.LogInfo("Handy connection key is empty. Enter it under Handy settings. It is saved for the next launch.");
+            }
+            else
+            {
+                Logger.LogInfo("Handy connection key loaded from config.");
+            }
+
+            SetConnectionStatus(serialPortConnected.Value ? "Connecting..." : "Disconnected");
 
             if (serialPortConnected.Value)
             {
+                StartCoroutine(ConnectWhenReady());
+            }
+        }
+
+        IEnumerator ConnectWhenReady()
+        {
+            int steady = 0;
+            float last = Time.realtimeSinceStartup;
+            while (steady < 45)
+            {
+                yield return null;
+                float now = Time.realtimeSinceStartup;
+                float dt = now - last;
+                last = now;
+                if (dt > 0.001f && dt < 0.05f)
+                {
+                    steady++;
+                }
+                else
+                {
+                    steady = 0;
+                }
+            }
+
+            if (serialPortConnected != null && serialPortConnected.Value)
+            {
                 UpdateSerialPortConnection();
+            }
+        }
+
+        public void OnDestroy()
+        {
+            if (handy != null && handy.IsConnected)
+            {
+                StartCoroutine(handy.Disconnect(handyConnectionKey.Value, OnHandyStatus));
             }
         }
 
@@ -285,6 +401,16 @@ namespace HS2_SexRobotController
             animationName = _info.nameAnimation;
 
             updateRobotPosition = false;
+
+            if (instance != null)
+            {
+                instance.ResetHandyForNewAnimation();
+            }
+
+            if (instance != null && !string.IsNullOrEmpty(animationName))
+            {
+                instance.Logger.LogInfo("HScene animation: " + animationName);
+            }
         }
 
         // Hook method to inject UI buttons into the main Honey Select 2 config menu
@@ -298,7 +424,7 @@ namespace HS2_SexRobotController
             buttonConnectRobot = Instantiate(btnTitle, btnTitle.parent);
             buttonConnectRobot.name = "btnConnectRobot";
             buttonConnectRobotText = buttonConnectRobot.GetComponentInChildren<Text>();
-            buttonConnectRobotText.text = "Connect Robot";
+            buttonConnectRobotText.text = "Connect Handy";
             buttonConnectRobotText.fontSize = 18;
             Button newButton = buttonConnectRobot.GetComponentInChildren<Button>();
             newButton.onClick = new Button.ButtonClickedEvent();
@@ -311,7 +437,7 @@ namespace HS2_SexRobotController
             buttonDisconnectRobot = Instantiate(btnTitle, btnTitle.parent);
             buttonDisconnectRobot.name = "btnDisconnectRobot";
             buttonDisconnectRobotText = buttonDisconnectRobot.GetComponentInChildren<Text>();
-            buttonDisconnectRobotText.text = "Disconnect Robot";
+            buttonDisconnectRobotText.text = "Disconnect Handy";
             buttonDisconnectRobotText.fontSize = 18;
             newButton = buttonDisconnectRobot.GetComponentInChildren<Button>();
             newButton.onClick = new Button.ButtonClickedEvent();
@@ -347,131 +473,21 @@ namespace HS2_SexRobotController
             });
         }
 
-        public void UpdateSerialPort()
-        {
-            serialPortConnected.Value = false;
-
-            Logger.LogInfo("Serial COM port changed to: " + serialPortConfig.Value);
-
-            if (serialPort != null)
-            {
-                if (serialPort.IsOpen)
-                {
-                    try
-                    {
-                        // Close the serial port connection
-                        serialPort.Close();
-
-                        Logger.LogInfo("Serial port " + serialPort.PortName + " has been disconnected.");
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogInfo("Error: " + e.ToString());
-                    }
-                }
-            }
-
-            serialPortStatus.Value = serialPortConfig.Value + " port is disconnected.";
-        }
-
         public void UpdateSerialPortConnection()
         {
-            // Disconnect serial port if currently connected
-            if (serialPort != null)
+            if (suppressConnectionEvent || handy == null)
             {
-                if (serialPort.IsOpen)
-                {
-                    try
-                    {
-                        // Close the serial port connection
-                        serialPort.Close();
-
-                        serialPortStatus.Value = serialPort.PortName + " port is disconnected.";
-
-                        Logger.LogInfo("Serial port " + serialPort.PortName + " has been disconnected.");
-                    }
-                    catch (Exception e)
-                    {
-                        serialPortStatus.Value = serialPort.PortName + " port is disconnected.";
-
-                        Logger.LogInfo("Serial port " + serialPort.PortName + " has been disconnected.");
-
-                        Logger.LogInfo("Error: " + e.ToString());
-                    }
-                }
+                return;
             }
 
-            // Connect to serial port
             if (serialPortConnected.Value)
             {
-                // Setup COM port based on updated config selection
-                serialPort = new SerialPort("\\\\.\\" + serialPortConfig.Value, 115200);
-
-                try
-                {
-                    // Open the serial port connection
-                    serialPort.Open();
-
-                    if (serialPort.IsOpen)
-                    {
-                        serialPortStatus.Value = "Connected to serial port " + serialPortConfig.Value + ".";
-
-                        serialPortConnected.Value = true;
-
-                        Logger.LogInfo("Connected to serial port " + serialPort.PortName + ".");
-                    }
-                    else
-                    {
-                        serialPortStatus.Value = "Error connecting to serial port " + serialPortConfig.Value + ".";
-
-                        serialPortConnected.Value = false;
-
-                        Logger.LogInfo("Error connecting to serial port " + serialPort.PortName + ".");
-                    }
-                }
-                catch (Exception e)
-                {
-                    serialPortStatus.Value = "Error connecting to serial port " + serialPortConfig.Value + ".";
-
-                    serialPortConnected.Value = false;
-
-                    Logger.LogInfo("Error: " + e.ToString());
-                }
+                StartCoroutine(handy.Connect(handyConnectionKey.Value, OnHandyStatus, () => handySendInterval.Value));
             }
-        }
-
-        public async Task UpdateConnectRobotButton()
-        {
-            await Task.Run(async () =>
+            else
             {
-                if (serialPort.IsOpen)
-                {
-                    buttonConnectRobotText.text = "Connected.";
-                }
-                else
-                {
-                    buttonConnectRobotText.text = "Can't Connect.";
-                }
-                await Task.Delay(1000);
-                buttonConnectRobotText.text = "Connect Robot";
-            });
-        }
-
-        public async Task UpdateDisconnectRobotButton()
-        {
-            await Task.Run(async () =>
-            {
-                if (!serialPort.IsOpen)
-                {
-                    buttonDisconnectRobotText.text = "Disconnected.";
-                }
-                else
-                {
-                    buttonDisconnectRobotText.text = "Can't Disconnect.";
-                }
-                await Task.Delay(1000);
-                buttonDisconnectRobotText.text = "Disconnect Robot";
-            });
+                StartCoroutine(handy.Disconnect(handyConnectionKey.Value, OnHandyStatus));
+            }
         }
 
         public async Task UpdateStrokeMultiplierIncreaseButton()
@@ -496,38 +512,20 @@ namespace HS2_SexRobotController
 
         public void Update()
         {
+            RefreshHandyButtons();
+
             // Check if connect robot button was clicked
             if (buttonConnectRobotClicked)
             {
                 buttonConnectRobotClicked = false;
-
-                if (serialPortConnected.Value)
-                {
-                    UpdateSerialPortConnection();
-                }
-                else
-                {
-                    serialPortConnected.Value = true;
-                }
-
-                Task task = UpdateConnectRobotButton();
+                RequestConnect();
             }
 
-            // Check if connect robot button was clicked
+            // Check if disconnect robot button was clicked
             if (buttonDisconnectRobotClicked)
             {
                 buttonDisconnectRobotClicked = false;
-
-                if (!serialPortConnected.Value)
-                {
-                    UpdateSerialPortConnection();
-                }
-                else
-                {
-                    serialPortConnected.Value = false;
-                }
-
-                Task task = UpdateDisconnectRobotButton();
+                RequestDisconnect();
             }
 
             // Check if increase stroke multiplier button was clicked
@@ -574,87 +572,29 @@ namespace HS2_SexRobotController
                 Logger.LogInfo("Stroke multiplier: " + robotL0Multiplier.Value);
             }
 
-            // Check if serial port connection toggle hotkey was pressed and toggle the serial port on/off if so
+            // Check if the connect/disconnect hotkey was pressed
             if (toggleSerialPortConnection.Value.IsDown())
             {
-                bool connectSerialPort = false;
-
-                if (serialPort != null)
+                if (IsOutputConnected())
                 {
-                    if (serialPort.IsOpen)
+                    if (serialPortConnected.Value)
                     {
-                        try
-                        {
-                            serialPortConnected.Value = false;
-
-                            serialPortStatus.Value = serialPort.PortName + " port is disconnected.";
-
-                            // Close the serial port connection
-                            serialPort.Close();
-
-                            Task task = UpdateDisconnectRobotButton();
-
-                            Logger.LogInfo("Serial port " + serialPort.PortName + " has been disconnected.");
-                        }
-                        catch (Exception e)
-                        {
-                            serialPortStatus.Value = serialPort.PortName + " port is disconnected.";
-
-                            Task task = UpdateDisconnectRobotButton();
-
-                            Logger.LogInfo("Serial port " + serialPort.PortName + " has been disconnected.");
-
-                            Logger.LogInfo("Error: " + e.ToString());
-                        }
+                        serialPortConnected.Value = false;
                     }
                     else
                     {
-                        connectSerialPort = true;
+                        UpdateSerialPortConnection();
                     }
                 }
                 else
                 {
-                    connectSerialPort = true;
-                }
-
-                if (connectSerialPort)
-                {
-                    try
+                    if (!serialPortConnected.Value)
                     {
-                        // Setup COM port based on config selection
-                        serialPort = new SerialPort("\\\\.\\" + serialPortConfig.Value, 115200);
-
-                        // Open the serial port connection
-                        serialPort.Open();
-
-                        if (serialPort.IsOpen)
-                        {
-                            serialPortConnected.Value = true;
-
-                            serialPortStatus.Value = "Connected to serial port " + serialPortConfig.Value + ".";
-
-                            Task task = UpdateConnectRobotButton();
-
-                            Logger.LogInfo("Connected to serial port " + serialPort.PortName + ".");
-                        }
-                        else
-                        {
-                            serialPortStatus.Value = "Error connecting to serial port " + serialPort.PortName + ".";
-
-                            Task task = UpdateConnectRobotButton();
-
-                            Logger.LogInfo("Error connecting to serial port " + serialPort.PortName + ".");
-                        }
+                        serialPortConnected.Value = true;
                     }
-                    catch (Exception e)
+                    else
                     {
-                        serialPortStatus.Value = "Error connecting to serial port " + serialPort.PortName + ".";
-
-                        Task task = UpdateConnectRobotButton();
-
-                        Logger.LogInfo("Error connecting to serial port " + serialPort.PortName + ".");
-
-                        Logger.LogInfo("Error: " + e.ToString());
+                        UpdateSerialPortConnection();
                     }
                 }
             }
@@ -674,12 +614,23 @@ namespace HS2_SexRobotController
             {
                 sw.Stop();
 
-                if (animationFemaleTargetDictionary.ContainsKey(animationName))
+                femaleTargetType resolvedTarget;
+                if (TryResolveFemaleTarget(animationName, out resolvedTarget))
                 {
-                    if (animationChanged)
-                    {
-                        // Find all the female and male chara in the current HScene
-                        females = hScene.GetFemales().Where(female => female != null).ToArray();
+                        if (animationChanged)
+                        {
+                            if (resolvedTarget == femaleTargetType.NONE)
+                            {
+                                StopStroke();
+                            }
+                            else if (IsPairTarget(resolvedTarget))
+                            {
+                                SetupPairScene(resolvedTarget);
+                            }
+                            else
+                            {
+                            // Find all the female and male chara in the current HScene
+                            females = hScene.GetFemales().Where(female => female != null).ToArray();
                         males = hScene.GetMales().Where(male => male != null).ToArray();
 
                         if (diagnosticsConfig.Value)
@@ -704,10 +655,8 @@ namespace HS2_SexRobotController
                             // Get the male's penis right ball
                             malePenisRightBall = males[0].GetComponentsInChildren<Transform>().Where(x => x.name == "cm_J_dan_f_R").FirstOrDefault();
 
-                            // Lookup in the animation dictionary the female target type for this current animation
-                            femaleTargetType femaleTargetTypeCurrent;
-                            animationFemaleTargetDictionary.TryGetValue(animationName, out femaleTargetTypeCurrent);
-                            currentFemaleTargetType = femaleTargetTypeCurrent;
+                            currentFemaleTargetType = resolvedTarget;
+                            Logger.LogInfo("Contact bone: " + ContactBoneName(currentFemaleTargetType));
 
                             if (currentFemaleTargetType == femaleTargetType.VAGINAL)
                             {
@@ -747,6 +696,8 @@ namespace HS2_SexRobotController
 
                                 // Get the female's mouth right
                                 femaleMouthRight = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "cf_J_Mouth_R").FirstOrDefault();
+
+                                femaleMouth = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "cf_J_MouthCavity").FirstOrDefault();
                             }
                             else if (currentFemaleTargetType == femaleTargetType.BREASTS)
                             {
@@ -760,29 +711,13 @@ namespace HS2_SexRobotController
                                 // Get the female's breasts center on the chest
                                 femaleBreasts = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "cf_J_Mune00").FirstOrDefault();
                             }
-                            else if (currentFemaleTargetType == femaleTargetType.LEFTHAND)
+                            else if (currentFemaleTargetType == femaleTargetType.LEFTHAND || currentFemaleTargetType == femaleTargetType.RIGHTHAND)
                             {
-                                // Find/set all the female transforms needed for the LEFTHAND calculations here so it doesn't have to happen each FixedUpdate()
-                                // Get the female's left hand's middle finger
-                                femaleMiddleFingerLeft = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Middle_L").FirstOrDefault();
-
-                                // Get the female's left hand's ring fingers
-                                femaleRingFingerLeft = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Ring_L").FirstOrDefault();
-
-                                // Get the female's left hand's center
-                                femaleHandLeft = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Hand_L").FirstOrDefault();
+                                LoadHands(females[0]);
                             }
-                            else if (currentFemaleTargetType == femaleTargetType.RIGHTHAND)
+                            else if (currentFemaleTargetType == femaleTargetType.FOOT)
                             {
-                                // Find/set all the female transforms needed for the RIGHTHAND calculations here so it doesn't have to happen each FixedUpdate()
-                                // Get the female's right hand's middle finger
-                                femaleMiddleFingerRight = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Middle_R").FirstOrDefault();
-
-                                // Get the female's right hand's ring fingers
-                                femaleRingFingerRight = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Ring_R").FirstOrDefault();
-
-                                // Get the female's right hand's center
-                                femaleHandRight = females[0].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Hand_R").FirstOrDefault();
+                                LoadFeet(females[0]);
                             }
                             else if (currentFemaleTargetType == femaleTargetType.INTERCRURAL)
                             {
@@ -831,6 +766,8 @@ namespace HS2_SexRobotController
 
                                     // Get the female's mouth right
                                     femaleMouthRight = females[1].GetComponentsInChildren<Transform>().Where(x => x.name == "cf_J_Mouth_R").FirstOrDefault();
+
+                                    femaleMouth = females[1].GetComponentsInChildren<Transform>().Where(x => x.name == "cf_J_MouthCavity").FirstOrDefault();
                                 }
                                 else
                                 {
@@ -841,15 +778,7 @@ namespace HS2_SexRobotController
                             {
                                 if (females.Length == 2)
                                 {
-                                    // Find/set all the female transforms needed for the RIGHTHANDSWAP calculations here so it doesn't have to happen each FixedUpdate()
-                                    // Get the female's right hand's middle finger
-                                    femaleMiddleFingerRight = females[1].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Middle_R").FirstOrDefault();
-
-                                    // Get the female's right hand's ring fingers
-                                    femaleRingFingerRight = females[1].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Ring_R").FirstOrDefault();
-
-                                    // Get the female's right hand's center
-                                    femaleHandRight = females[1].GetComponentsInChildren<Transform>().Where(x => x.name == "N_Hand_R").FirstOrDefault();
+                                    LoadHands(females[1]);
                                 }
                                 else
                                 {
@@ -891,13 +820,29 @@ namespace HS2_SexRobotController
 
                             Logger.LogInfo("Error: The current HScene doesn't have 1 male and at least 1 female.");
                         }
+                            }
 
-                        autoRangeMin = 1.0f;
-                        autoRangeMax = 0.0f;
                     }
 
                     if (updateRobotPosition)
                     {
+                        if (IsPairTarget(currentFemaleTargetType))
+                        {
+                            float pairRaw;
+                            if (TryMeasurePair(out pairRaw) && !ShouldDelayVisual())
+                            {
+                                try
+                                {
+                                    SendHandyStroke(pairRaw);
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.LogInfo("Error: " + e.ToString());
+                                }
+                            }
+                        }
+                        else
+                        {
                         // Setup T-code reference coordinate system
                         // X(L0) is up/down in reference to the selected male's penis vector and is positive up
                         // Y(L1) is toward/away orthogonal to the selected male's penis vector and is positive away
@@ -979,8 +924,9 @@ namespace HS2_SexRobotController
                             femaleTargetZAxis = Vector3.Cross(femaleTargetXAxis, femaleTargetYAxis);
                             femaleTargetZAxis = (femaleTargetXAxis.magnitude / femaleTargetZAxis.magnitude) * femaleTargetZAxis;
 
-                            // Vector from the female's mouth center point to the male's penis's base
-                            femaleTargetToMalePenisBase = femaleMouthCenterPoint - malePenisBase.position;
+                            // Blowjobs use one mouth bone against the penis. The lip center is only a fallback.
+                            Vector3 mouthPoint = femaleMouth != null ? femaleMouth.position : femaleMouthCenterPoint;
+                            femaleTargetToMalePenisBase = mouthPoint - malePenisBase.position;
                         }
                         else if (currentFemaleTargetType == femaleTargetType.BREASTS)
                         {
@@ -1050,154 +996,1413 @@ namespace HS2_SexRobotController
                             femaleTargetToMalePenisBase = femaleVagina.position - malePenisBase.position;
                         }
 
+                        if (IsHandTarget(currentFemaleTargetType))
+                        {
+                            Transform grip = ClosestGripBone();
+                            if (grip != null)
+                            {
+                                femaleTargetToMalePenisBase = grip.position - malePenisBase.position;
+                            }
+                        }
+
+                        if (currentFemaleTargetType == femaleTargetType.FOOT)
+                        {
+                            Transform foot = ClosestFootBone();
+                            if (foot != null)
+                            {
+                                femaleTargetToMalePenisBase = foot.position - malePenisBase.position;
+                            }
+                        }
+
                         // Calculate X(L0) for robot based on the reference X axis and the vector from the female's vagina's labia trigger to the male's penis's base collider
                         float robotL0 = Vector3.Dot(malePenisXAxis, femaleTargetToMalePenisBase) / (malePenisXAxis.magnitude * malePenisXAxis.magnitude);
+                        float handyRawL0 = robotL0;
 
-                        // Calculate Y(L1) for robot based on the reference Y axis and the vector from the female's vagina's labia trigger to the male's penis's base collider
-                        float robotL1 = 0.5f + Vector3.Dot(malePenisYAxis, femaleTargetToMalePenisBase) / (malePenisYAxis.magnitude * malePenisYAxis.magnitude);
-
-                        // Calculate Z(L2) for robot based on the reference Z axis and the vector from the female's vagina's labia trigger to the male's penis's base collider
-                        float robotL2 = 0.5f + Vector3.Dot(malePenisZAxis, femaleTargetToMalePenisBase) / (malePenisZAxis.magnitude * malePenisZAxis.magnitude);
-
-                        // Determine the coordinate system orientation between the male and female, used for calculating the R0 rotation
-                        bool coordinateAxesMatch = true;
-
-                        if (Vector3.Dot(malePenisZAxis, femaleTargetZAxis) < 0)
-                        {
-                            coordinateAxesMatch = false;
-                        }
-
-                        // Calculate RX(R0) for robot based on the angle between reference Z axis and the female's vagina to anus vector
-                        float robotR0Angle = Vector3.Angle(malePenisZAxis, femaleTargetZAxis);
-
-                        // Calculate RY(R1) for robot based on the reference Z axis and the vector from the female's vagina's labia to vagina triggers
-                        float robotR1Angle = -(90.0f - Vector3.Angle(malePenisZAxis, femaleTargetXAxis));
-
-                        if (!coordinateAxesMatch)
-                        {
-                            robotR0Angle = 180.0f - robotR0Angle;
-                            robotR1Angle *= -1.0f;
-                        }
-
-                        float robotR0 = 0.5f + robotR0Angle / 180.0f;
-
-                        float robotR1 = 0.5f + robotR1Angle / 180.0f;
-
-                        // Calculate RZ(R2) for robot based on the reference Y axis and the vector from the female's vagina's labia to vagina triggers
-                        float robotR2Angle = -(90.0f - Vector3.Angle(malePenisYAxis, femaleTargetXAxis));
-
-                        float robotR2 = 0.5f + robotR2Angle / 180.0f;
-
-                        // Calculate automatic range values
-                        if (robotL0 >= 0.0f && robotL0 <= 1.0f)
-                        {
-                            if (robotL0 < autoRangeMin)
-                            {
-                                autoRangeMin = robotL0;
-                            }
-
-                            if (robotL0 > autoRangeMax)
-                            {
-                                autoRangeMax = robotL0;
-                            }
-                        }
-
-                        // Get the automatic range midpoint
-                        autoRangeMid = (autoRangeMin + autoRangeMax) / 2.0f;
-
-                        // Caclulate modified robotL0
-                        robotL0 = 0.5f + (robotL0 - autoRangeMid) * robotL0Multiplier.Value;
-
-                        // Formulate T-Code command string
-                        string command = "L0" + GenerateTCode(robotL0, robotL0Min.Value, robotL0Max.Value) + "\n";
-                        command += "L1" + GenerateTCode(robotL1, robotL1Min.Value, robotL1Max.Value) + "\n";
-                        command += "L2" + GenerateTCode(robotL2, robotL2Min.Value, robotL2Max.Value) + "\n";
-                        command += "R0" + GenerateTCode(robotR0, robotR0Min.Value, robotR0Max.Value) + "\n";
-                        command += "R1" + GenerateTCode(robotR1, robotR1Min.Value, robotR1Max.Value) + "\n";
-                        command += "R2" + GenerateTCode(robotR2, robotR2Min.Value, robotR2Max.Value);
-
-                        if (diagnosticsConfig.Value)
-                        {
-                            Logger.LogInfo("malePenisBase: " + malePenisBase.position.x.ToString() + ", " + malePenisBase.position.y.ToString() + ", " + malePenisBase.position.z.ToString());
-                            Logger.LogInfo("malePenisTip: " + malePenisTip.position.x.ToString() + ", " + malePenisTip.position.y.ToString() + ", " + malePenisTip.position.z.ToString());
-                            Logger.LogInfo("malePenisLeftBall: " + malePenisLeftBall.position.x.ToString() + ", " + malePenisLeftBall.position.y.ToString() + ", " + malePenisLeftBall.position.z.ToString());
-                            Logger.LogInfo("malePenisRightBall: " + malePenisRightBall.position.x.ToString() + ", " + malePenisRightBall.position.y.ToString() + ", " + malePenisRightBall.position.z.ToString());
-                            Logger.LogInfo("malePenisBallsCenterPoint: " + malePenisBallsCenterPoint.x.ToString() + ", " + malePenisBallsCenterPoint.y.ToString() + ", " + malePenisBallsCenterPoint.z.ToString());
-                            Logger.LogInfo("malePenisLength: " + malePenisLength.ToString());
-                            Logger.LogInfo("malePenisXAxis: " + malePenisXAxis.x.ToString() + ", " + malePenisXAxis.y.ToString() + ", " + malePenisXAxis.z.ToString());
-                            Logger.LogInfo("malePenisZAxis: " + malePenisZAxis.x.ToString() + ", " + malePenisZAxis.y.ToString() + ", " + malePenisZAxis.z.ToString());
-                            Logger.LogInfo("malePenisYAxis: " + malePenisYAxis.x.ToString() + ", " + malePenisYAxis.y.ToString() + ", " + malePenisYAxis.z.ToString());
-                            Logger.LogInfo("Robot L0 Multiplier: " + robotL0Multiplier.Value);
-                            Logger.LogInfo("Robot L0: " + robotL0);
-                            Logger.LogInfo("Robot L1: " + robotL1);
-                            Logger.LogInfo("Robot L2: " + robotL2);
-                            Logger.LogInfo("Robot R0: " + robotR0);
-                            Logger.LogInfo("Robot R1: " + robotR1);
-                            Logger.LogInfo("Robot R2: " + robotR2);
-                            Logger.LogInfo("Robot R0 Angle: " + robotR0Angle);
-                            Logger.LogInfo("Robot R1 Angle: " + robotR1Angle);
-                            Logger.LogInfo("Robot R2 Angle: " + robotR2Angle);
-                            Logger.LogInfo("T-Code Command: \n" + command);
-                            Logger.LogInfo("autoRangeMin: " + autoRangeMin);
-                            Logger.LogInfo("autoRangeMid: " + autoRangeMid);
-                            Logger.LogInfo("autoRangeMax: " + autoRangeMax);
-                            Logger.LogInfo("robotL0 percent: " + (((robotL0 - autoRangeMin) / (autoRangeMax - autoRangeMin)) * 100.0f));
-                        }
-
-                        // Only update the sex robot's position/servos
-                        if (robotL0 >= 0.0f && robotL0 <= 1.0f)
+                        if (!ShouldDelayVisual())
                         {
                             try
                             {
-                                if (serialPort != null)
-                                {
-                                    // If serial port is open then send the command to the robot
-                                    if (serialPort.IsOpen)
-                                    {
-                                        serialPort.WriteLine(command);
-
-                                        if (diagnosticsConfig.Value)
-                                        {
-                                            Logger.LogInfo("Command value sent: " + command);
-                                        }
-                                    }
-                                }
+                                SendHandyStroke(handyRawL0);
                             }
                             catch (Exception e)
                             {
                                 Logger.LogInfo("Error: " + e.ToString());
                             }
+                            }
                         }
                     }
                 }
+                else if (animationChanged)
+                {
+                    StopStroke();
+                    Logger.LogInfo("No contact for scene: " + animationName);
+                }
 
                 sw = Stopwatch.StartNew();
+
             }
         }
 
-        string GenerateTCode(float input, float min, float max)
+        public void LateUpdate()
         {
-            if (input > max) input = max;
-            if (input < min) input = min;
+            SampleHandyFromTruePose();
+            DelayHandyVisuals();
+            WriteLive();
+        }
 
-            input = input * 1000;
-
-            string output;
-
-            if (input >= 999f)
+        void SampleHandyFromTruePose()
+        {
+            if (!updateRobotPosition || !ShouldDelayVisual())
             {
-                output = "999";
+                return;
             }
-            else if (input >= 1f)
+
+            float raw;
+            if (!TryReadHandyRaw(out raw))
             {
-                output = input.ToString("000");
+                return;
+            }
+
+            try
+            {
+                SendHandyStroke(raw);
+            }
+            catch (Exception e)
+            {
+                Logger.LogInfo("Error: " + e.ToString());
+            }
+        }
+
+        bool TryReadHandyRaw(out float raw)
+        {
+            raw = 0f;
+            if (IsPairTarget(currentFemaleTargetType))
+            {
+                return TryMeasurePair(out raw);
+            }
+
+            if (malePenisBase == null || malePenisTip == null)
+            {
+                return false;
+            }
+
+            Vector3 axis = malePenisTip.position - malePenisBase.position;
+            float denom = axis.sqrMagnitude;
+            if (denom < 0.000001f)
+            {
+                return false;
+            }
+
+            Vector3 point;
+            if (!TryContactPoint(out point))
+            {
+                return false;
+            }
+
+            raw = Vector3.Dot(axis, point - malePenisBase.position) / denom;
+            return true;
+        }
+
+        bool TryContactPoint(out Vector3 point)
+        {
+            point = Vector3.zero;
+            if (currentFemaleTargetType == femaleTargetType.VAGINAL || currentFemaleTargetType == femaleTargetType.VAGINALSWAP || currentFemaleTargetType == femaleTargetType.INTERCRURAL || currentFemaleTargetType == femaleTargetType.INTERCRURALSWAP)
+            {
+                if (femaleVagina == null)
+                {
+                    return false;
+                }
+
+                point = femaleVagina.position;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.ANAL)
+            {
+                if (femaleAnus == null)
+                {
+                    return false;
+                }
+
+                point = femaleAnus.position;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.ORAL || currentFemaleTargetType == femaleTargetType.ORALSWAP)
+            {
+                if (femaleMouth != null)
+                {
+                    point = femaleMouth.position;
+                    return true;
+                }
+
+                if (femaleMouthLeft == null || femaleMouthRight == null)
+                {
+                    return false;
+                }
+
+                point = (femaleMouthLeft.position + femaleMouthRight.position) * 0.5f;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.BREASTS)
+            {
+                if (femaleMiddleBreastsLeft == null || femaleMiddleBreastsRight == null)
+                {
+                    return false;
+                }
+
+                point = (femaleMiddleBreastsLeft.position + femaleMiddleBreastsRight.position) * 0.5f;
+                return true;
+            }
+
+            if (IsHandTarget(currentFemaleTargetType))
+            {
+                Transform grip = ClosestGripBone();
+                if (grip == null)
+                {
+                    return false;
+                }
+
+                point = grip.position;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.FOOT)
+            {
+                Transform foot = ClosestFootBone();
+                if (foot == null)
+                {
+                    return false;
+                }
+
+                point = foot.position;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool ShouldDelayVisual()
+        {
+            return handy != null && handy.IsConnected && hScene != null;
+        }
+
+        public void RestoreHandyVisuals()
+        {
+            if (!ShouldDelayVisual())
+            {
+                for (int i = 0; i < animHolds.Count; i++)
+                {
+                    animHolds[i].rewound = false;
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < animHolds.Count; i++)
+            {
+                AnimHold hold = animHolds[i];
+                if (!hold.rewound || hold.stuck > 6 || hold.animator == null || hold.animator.IsInTransition(0))
+                {
+                    continue;
+                }
+
+                AnimatorStateInfo info = hold.animator.GetCurrentAnimatorStateInfo(0);
+                if (info.shortNameHash != hold.stateHash)
+                {
+                    hold.rewound = false;
+                    continue;
+                }
+
+                hold.animator.Play(hold.stateHash, 0, hold.trueNormalized);
+                hold.animator.Update(0f);
+                hold.rewound = false;
+            }
+        }
+
+        void DelayHandyVisuals()
+        {
+            if (!ShouldDelayVisual())
+            {
+                return;
+            }
+
+            float delay = handy != null ? handy.VisualDelaySeconds : (HandyDevice.PlaybackDelayMs / 1000f);
+            List<Animator> bodies = new List<Animator>();
+            CollectBodies(bodies);
+            if (!loggedAnimDelay && bodies.Count > 0)
+            {
+                loggedAnimDelay = true;
+                Logger.LogInfo("H scene pose is held back " + delay.ToString("0.00") + "s so it meets the sleeve.");
+            }
+
+            for (int i = 0; i < bodies.Count; i++)
+            {
+                Animator animator = bodies[i];
+                if (animator == null || !animator.isActiveAndEnabled || animator.IsInTransition(0))
+                {
+                    continue;
+                }
+
+                AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                if (info.length < 0.05f)
+                {
+                    continue;
+                }
+
+                AnimHold hold = null;
+                for (int h = 0; h < animHolds.Count; h++)
+                {
+                    if (animHolds[h].animator == animator)
+                    {
+                        hold = animHolds[h];
+                        break;
+                    }
+                }
+
+                if (hold == null)
+                {
+                    hold = new AnimHold();
+                    hold.animator = animator;
+                    animHolds.Add(hold);
+                }
+
+                if (hold.havePrev && hold.stateHash == info.shortNameHash && Math.Abs(info.normalizedTime - hold.trueNormalized) < 0.00001f)
+                {
+                    hold.stuck++;
+                }
+                else
+                {
+                    hold.stuck = 0;
+                }
+
+                if (hold.stuck > 6)
+                {
+                    hold.rewound = false;
+                    continue;
+                }
+
+                hold.stateHash = info.shortNameHash;
+                hold.trueNormalized = info.normalizedTime;
+                hold.havePrev = true;
+                float shown = info.normalizedTime - (delay / info.length);
+                if (shown < 0f)
+                {
+                    shown = 0f;
+                }
+
+                animator.Play(info.shortNameHash, 0, shown);
+                animator.Update(0f);
+                hold.rewound = true;
+            }
+        }
+
+        void CollectBodies(List<Animator> bodies)
+        {
+            try
+            {
+                AddBodies(hScene.GetFemales(), bodies);
+                AddBodies(hScene.GetMales(), bodies);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        static void AddBodies(ChaControl[] people, List<Animator> bodies)
+        {
+            if (people == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < people.Length; i++)
+            {
+                if (people[i] == null || people[i].animBody == null)
+                {
+                    continue;
+                }
+
+                bodies.Add(people[i].animBody);
+            }
+        }
+
+        class AnimHold
+        {
+            public Animator animator;
+            public int stateHash;
+            public float trueNormalized;
+            public bool rewound;
+            public float prevShown;
+            public bool havePrev;
+            public int stuck;
+        }
+
+        [DefaultExecutionOrder(-32000)]
+        public class HandyPoseClock : MonoBehaviour
+        {
+            public HS2_HandyController Owner;
+
+            void Update()
+            {
+                if (Owner != null)
+                {
+                    Owner.RestoreHandyVisuals();
+                }
+            }
+        }
+
+        void WriteLive()
+        {
+            float now = Time.realtimeSinceStartup;
+            if (now < liveWriteAt || string.IsNullOrEmpty(liveFolder))
+            {
+                return;
+            }
+
+            liveWriteAt = now + 0.1f;
+            string bone = "bone=none";
+            if (malePenisBase != null)
+            {
+                Vector3 p = malePenisBase.position;
+                bone = "bone=" + p.x.ToString("0.00") + "," + p.y.ToString("0.00") + "," + p.z.ToString("0.00");
+            }
+
+            string bodies = DescribeBodies();
+            string handyLine = "handy=off";
+            string contact = ContactBoneName(currentFemaleTargetType);
+            if (handy != null && handy.IsConnected)
+            {
+                handyLine = "handy=on x=" + liveSent.ToString() + " raw=" + liveRaw.ToString("0.000") + " q=" + handy.Queued.ToString() + " play=" + (handy.StreamPlaying ? "1" : "0") + " off=" + handy.OffsetMs.ToString();
+            }
+
+            liveText = pluginVersion + " " + (string.IsNullOrEmpty(animationName) ? "no-anim" : animationName) + " contact=" + contact + "\n" + handyLine + " " + bone + "\n" + bodies;
+            NoteSceneSurvey(animationName, contact, liveRaw, liveSent, liveMaxDn);
+            try
+            {
+                string path = Path.Combine(liveFolder, "status.txt");
+                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.Write(liveText);
+                }
+
+                using (FileStream fs = new FileStream(Path.Combine(liveFolder, "trace.txt"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.WriteLine(now.ToString("0.00") + " " + liveText.Replace("\n", " | "));
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        string DescribeBodies()
+        {
+            if (hScene == null)
+            {
+                return "pose=none";
+            }
+
+            List<Animator> bodies = new List<Animator>();
+            CollectBodies(bodies);
+            if (bodies.Count == 0)
+            {
+                return "pose=none";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            int count = bodies.Count;
+            if (count > livePrevNorm.Length)
+            {
+                count = livePrevNorm.Length;
+            }
+
+            liveMaxDn = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                Animator animator = bodies[i];
+                if (animator == null)
+                {
+                    continue;
+                }
+
+                AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                float now = info.normalizedTime;
+                float dn = liveHavePrev[i] ? now - livePrevNorm[i] : 0f;
+                livePrevNorm[i] = now;
+                liveHavePrev[i] = true;
+                if (Mathf.Abs(dn) > liveMaxDn)
+                {
+                    liveMaxDn = Mathf.Abs(dn);
+                }
+                string clip = "?";
+                AnimatorClipInfo[] clips = animator.GetCurrentAnimatorClipInfo(0);
+                if (clips != null && clips.Length > 0 && clips[0].clip != null)
+                {
+                    clip = clips[0].clip.name;
+                }
+
+                if (sb.Length > 0)
+                {
+                    sb.Append(" | ");
+                }
+
+                sb.Append(clip);
+                sb.Append(" n=");
+                sb.Append(now.ToString("0.000"));
+                sb.Append(" dn=");
+                sb.Append(dn.ToString("0.000"));
+            }
+
+            return sb.Length == 0 ? "pose=none" : sb.ToString();
+        }
+
+        void NoteSceneSurvey(string scene, string contact, float raw, int sent, float dn)
+        {
+            if (string.IsNullOrEmpty(scene))
+            {
+                FlushSceneSurvey();
+                return;
+            }
+
+            if (scene != surveyScene)
+            {
+                FlushSceneSurvey();
+                surveyScene = scene;
+                surveyContact = contact;
+                surveyRawMin = raw;
+                surveyRawMax = raw;
+                surveySentMin = sent;
+                surveySentMax = sent;
+                surveySamples = 0;
+                surveyDn = 0f;
+            }
+
+            surveyContact = contact;
+            if (raw < surveyRawMin)
+            {
+                surveyRawMin = raw;
+            }
+
+            if (raw > surveyRawMax)
+            {
+                surveyRawMax = raw;
+            }
+
+            if (sent >= 0)
+            {
+                if (sent < surveySentMin)
+                {
+                    surveySentMin = sent;
+                }
+
+                if (sent > surveySentMax)
+                {
+                    surveySentMax = sent;
+                }
+            }
+
+            if (dn > surveyDn)
+            {
+                surveyDn = dn;
+            }
+
+            surveySamples++;
+        }
+
+        void FlushSceneSurvey()
+        {
+            if (surveySamples < 8 || string.IsNullOrEmpty(surveyScene) || string.IsNullOrEmpty(liveFolder))
+            {
+                surveySamples = 0;
+                surveyScene = "";
+                return;
+            }
+
+            float span = surveyRawMax - surveyRawMin;
+            int sentSpan = 0;
+            if (surveySentMax >= surveySentMin && surveySentMin <= 100)
+            {
+                sentSpan = surveySentMax - surveySentMin;
+            }
+
+            string verdict = "OK";
+            if (surveyDn < 0.01f)
+            {
+                verdict = "FROZEN";
+            }
+            else if (span < 0.04f)
+            {
+                verdict = "FLAT";
+            }
+            else if (sentSpan < 4)
+            {
+                verdict = "PEGGED";
+            }
+
+            string line = surveyScene + " contact=" + surveyContact + " n=" + surveySamples.ToString() + " raw=" + surveyRawMin.ToString("0.000") + ".." + surveyRawMax.ToString("0.000") + " sent=" + surveySentMin.ToString() + ".." + surveySentMax.ToString() + " dn=" + surveyDn.ToString("0.000") + " " + verdict;
+            Logger.LogInfo("Scene survey: " + line);
+            try
+            {
+                using (FileStream fs = new FileStream(Path.Combine(liveFolder, "scenes.txt"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.WriteLine(line);
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            surveySamples = 0;
+            surveyScene = "";
+        }
+
+        void ResetHandyForNewAnimation()
+        {
+            animHolds.Clear();
+            haveStrokeLimit = false;
+            haveStrokeCenter = false;
+            if (handy != null)
+            {
+                handy.ResetStream();
+            }
+        }
+
+        void RequestConnect()
+        {
+            if (serialPortConnected.Value)
+            {
+                UpdateSerialPortConnection();
             }
             else
             {
-                output = "000";
+                serialPortConnected.Value = true;
+            }
+        }
+
+        void RequestDisconnect()
+        {
+            if (!serialPortConnected.Value)
+            {
+                UpdateSerialPortConnection();
+            }
+            else
+            {
+                serialPortConnected.Value = false;
+            }
+        }
+
+        static void DrawHandyConnectButton(ConfigEntryBase entry)
+        {
+            if (instance == null)
+            {
+                return;
             }
 
-            return output;
+            string status = instance.handyStatus != null ? instance.handyStatus.Value : "Disconnected";
+            bool connecting = status != null && status.StartsWith("Connecting");
+            string label = "Connect";
+            if (instance.IsOutputConnected())
+            {
+                label = "Disconnect";
+            }
+            else if (connecting)
+            {
+                label = "Connecting...";
+            }
+
+            if (GUILayout.Button(label, GUILayout.ExpandWidth(true)))
+            {
+                if (label == "Disconnect" || connecting)
+                {
+                    instance.RequestDisconnect();
+                }
+                else
+                {
+                    instance.RequestConnect();
+                }
+            }
+        }
+
+        bool IsOutputConnected()
+        {
+            return handy != null && handy.IsConnected;
+        }
+
+        void OnHandyCredentialChanged()
+        {
+            if (serialPortConnected.Value)
+            {
+                UpdateSerialPortConnection();
+            }
+        }
+
+        void OnHandyStatus(string status)
+        {
+            SetConnectionStatus(status);
+
+            if (status != null && status.StartsWith("Disconnected") && serialPortConnected.Value)
+            {
+                suppressConnectionEvent = true;
+                serialPortConnected.Value = false;
+                suppressConnectionEvent = false;
+            }
+        }
+
+        void SetConnectionStatus(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                status = "Disconnected";
+            }
+
+            if (handyStatus != null && handyStatus.Value != status)
+            {
+                handyStatus.Value = status;
+            }
+
+            RefreshHandyButtons();
+        }
+
+        void RefreshHandyButtons()
+        {
+            if (buttonConnectRobotText == null || handyStatus == null)
+            {
+                return;
+            }
+
+            string status = handyStatus.Value;
+            bool connected = status == "Connected";
+            bool connecting = status != null && status.StartsWith("Connecting");
+            string connectLabel = "Connect Handy";
+            string disconnectLabel = "Disconnected";
+
+            if (connected)
+            {
+                connectLabel = "Connected";
+                disconnectLabel = "Disconnect Handy";
+            }
+            else if (connecting)
+            {
+                connectLabel = "Connecting...";
+                disconnectLabel = "Disconnect Handy";
+            }
+
+            if (buttonConnectRobotText.text != connectLabel)
+            {
+                buttonConnectRobotText.text = connectLabel;
+            }
+
+            if (buttonDisconnectRobotText != null && buttonDisconnectRobotText.text != disconnectLabel)
+            {
+                buttonDisconnectRobotText.text = disconnectLabel;
+            }
+        }
+
+        void LoadHands(ChaControl female)
+        {
+            if (female == null)
+            {
+                return;
+            }
+
+            Transform[] bones = female.GetComponentsInChildren<Transform>();
+            femaleMiddleFingerLeft = FindBone(bones, "N_Middle_L");
+            femaleRingFingerLeft = FindBone(bones, "N_Ring_L");
+            femaleHandLeft = FindBone(bones, "N_Hand_L");
+            femaleMiddleFingerRight = FindBone(bones, "N_Middle_R");
+            femaleRingFingerRight = FindBone(bones, "N_Ring_R");
+            femaleHandRight = FindBone(bones, "N_Hand_R");
+        }
+
+        void LoadFeet(ChaControl female)
+        {
+            if (female == null)
+            {
+                return;
+            }
+
+            Transform[] bones = female.GetComponentsInChildren<Transform>();
+            femaleFootLeft = FindBone(bones, "cf_J_Leg03_L");
+            femaleFootRight = FindBone(bones, "cf_J_Leg03_R");
+            femaleToesLeft = FindBone(bones, "cf_J_Toes_L");
+            femaleToesRight = FindBone(bones, "cf_J_Toes_R");
+        }
+
+        static Transform FindBone(Transform[] bones, string name)
+        {
+            if (bones == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] != null && bones[i].name == name)
+                {
+                    return bones[i];
+                }
+            }
+
+            return null;
+        }
+
+        static bool IsHandTarget(femaleTargetType target)
+        {
+            return target == femaleTargetType.LEFTHAND || target == femaleTargetType.RIGHTHAND || target == femaleTargetType.RIGHTHANDSWAP;
+        }
+
+        Transform ClosestGripBone()
+        {
+            if (malePenisBase == null || malePenisTip == null)
+            {
+                return null;
+            }
+
+            Vector3 axis = malePenisTip.position - malePenisBase.position;
+            float lengthSquared = axis.sqrMagnitude;
+            Transform best = null;
+            float bestDistance = float.MaxValue;
+            if (currentFemaleTargetType == femaleTargetType.LEFTHAND)
+            {
+                ConsiderGrip(femaleMiddleFingerLeft, axis, lengthSquared, ref best, ref bestDistance);
+                ConsiderGrip(femaleRingFingerLeft, axis, lengthSquared, ref best, ref bestDistance);
+                ConsiderGrip(femaleHandLeft, axis, lengthSquared, ref best, ref bestDistance);
+            }
+            else if (currentFemaleTargetType == femaleTargetType.RIGHTHAND || currentFemaleTargetType == femaleTargetType.RIGHTHANDSWAP)
+            {
+                ConsiderGrip(femaleMiddleFingerRight, axis, lengthSquared, ref best, ref bestDistance);
+                ConsiderGrip(femaleRingFingerRight, axis, lengthSquared, ref best, ref bestDistance);
+                ConsiderGrip(femaleHandRight, axis, lengthSquared, ref best, ref bestDistance);
+            }
+
+            return best;
+        }
+
+        Transform ClosestFootBone()
+        {
+            if (malePenisBase == null || malePenisTip == null)
+            {
+                return null;
+            }
+
+            Vector3 axis = malePenisTip.position - malePenisBase.position;
+            float lengthSquared = axis.sqrMagnitude;
+            Transform best = null;
+            float bestDistance = float.MaxValue;
+            ConsiderGrip(femaleToesLeft, axis, lengthSquared, ref best, ref bestDistance);
+            ConsiderGrip(femaleToesRight, axis, lengthSquared, ref best, ref bestDistance);
+            ConsiderGrip(femaleFootLeft, axis, lengthSquared, ref best, ref bestDistance);
+            ConsiderGrip(femaleFootRight, axis, lengthSquared, ref best, ref bestDistance);
+            return best;
+        }
+
+        void ConsiderGrip(Transform bone, Vector3 axis, float lengthSquared, ref Transform best, ref float bestDistance)
+        {
+            if (bone == null || malePenisBase == null)
+            {
+                return;
+            }
+
+            Vector3 offset = bone.position - malePenisBase.position;
+            float along = 0f;
+            if (lengthSquared > 0.000001f)
+            {
+                along = Vector3.Dot(axis, offset) / lengthSquared;
+            }
+
+            float clamped = along;
+            if (clamped < 0f)
+            {
+                clamped = 0f;
+            }
+            else if (clamped > 1f)
+            {
+                clamped = 1f;
+            }
+
+            Vector3 closest = malePenisBase.position + (axis * clamped);
+            float distance = (bone.position - closest).sqrMagnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = bone;
+            }
+        }
+
+        bool TryResolveFemaleTarget(string name, out femaleTargetType target)
+        {
+            if (!string.IsNullOrEmpty(name) && animationFemaleTargetDictionary.TryGetValue(name, out target))
+            {
+                return true;
+            }
+
+            target = femaleTargetType.VAGINAL;
+            if (string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+
+            string n = name.ToLowerInvariant();
+            if (n.Contains("vibrator") || n.Contains("masturbat") || n.Contains("fingering") || n.Contains("cunnilingus") || n.Contains("cunilingus") || n.Contains("spank") || n.Contains("massage") || n.Contains("foreplay") || n.Contains("kiss") || n.Contains("grope") || n.Contains("breast play") || n == "rimjob" || n.Contains("rimjob"))
+            {
+                if (!(n.Contains("handjob") || n.Contains("blow") || n.Contains(" bj") || n.Contains("missionary") || n.Contains("doggy") || n.Contains("cowgirl") || n.Contains("sex")))
+                {
+                    target = ForeplayTarget(n);
+                    return true;
+                }
+            }
+
+            bool hand = n.Contains("handjob") || n.Contains("hand job");
+            bool foot = n.Contains("footjob") || n.Contains("foot job");
+            bool mouth = n.Contains("blow") || n.Contains(" bj") || n.EndsWith(" bj") || n.Contains("irrum") || n.Contains("deepthroat") || n.Contains("tip lick") || n.Contains("glans") || n == "69";
+            if (hand)
+            {
+                target = femaleTargetType.LEFTHAND;
+                return true;
+            }
+
+            if (foot)
+            {
+                target = femaleTargetType.FOOT;
+                return true;
+            }
+
+            if (mouth)
+            {
+                target = femaleTargetType.ORAL;
+                return true;
+            }
+
+            if (n.Contains("tit") || n.Contains("boob"))
+            {
+                target = femaleTargetType.BREASTS;
+                return true;
+            }
+
+            if (n.Contains("anal"))
+            {
+                target = femaleTargetType.ANAL;
+                return true;
+            }
+
+            if (n.Contains("thigh") || n.Contains("intercrural"))
+            {
+                target = femaleTargetType.INTERCRURAL;
+                return true;
+            }
+
+            if (n.Contains("missionary") || n.Contains("doggy") || n.Contains("cowgirl") || n.Contains("sex") || n.Contains("spoon") || n == "side" || n.Contains(" side") || n.Contains("squat") || n.Contains("suspend") || n.Contains("tied") || n.Contains("squeeze") || n.Contains("counter") || n.Contains("insertion") || n.Contains("piledriver") || n.Contains("press"))
+            {
+                target = femaleTargetType.VAGINAL;
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool IsPairTarget(femaleTargetType target)
+        {
+            return target == femaleTargetType.KISS || target == femaleTargetType.HANDVAGINA || target == femaleTargetType.MOUTHVAGINA || target == femaleTargetType.MOUTHANUS || target == femaleTargetType.HANDBREAST || target == femaleTargetType.HANDHIP || target == femaleTargetType.VIBRATOR;
+        }
+
+        static femaleTargetType ForeplayTarget(string n)
+        {
+            if (n.Contains("vibrator"))
+            {
+                return femaleTargetType.VIBRATOR;
+            }
+
+            if (n.Contains("spank"))
+            {
+                return femaleTargetType.HANDHIP;
+            }
+
+            if (n.Contains("fingering") || n.Contains("masturbat") || n.Contains("foreplay"))
+            {
+                return femaleTargetType.HANDVAGINA;
+            }
+
+            if (n.Contains("rim"))
+            {
+                return femaleTargetType.MOUTHANUS;
+            }
+
+            if (n.Contains("cunnilingus") || n.Contains("cunilingus"))
+            {
+                return femaleTargetType.MOUTHVAGINA;
+            }
+
+            if (n.Contains("breast") || n.Contains("massage") || n.Contains("grope"))
+            {
+                return femaleTargetType.HANDBREAST;
+            }
+
+            if (n.Contains("kiss"))
+            {
+                return femaleTargetType.KISS;
+            }
+
+            return femaleTargetType.NONE;
+        }
+
+        void SetupPairScene(femaleTargetType target)
+        {
+            females = hScene.GetFemales().Where(female => female != null).ToArray();
+            males = hScene.GetMales().Where(male => male != null).ToArray();
+            if (females.Length == 0)
+            {
+                updateRobotPosition = false;
+                animationChanged = false;
+                Logger.LogInfo("Error: no female for " + animationName);
+                return;
+            }
+
+            ChaControl partner = null;
+            if (males.Length > 0)
+            {
+                partner = males[0];
+            }
+            else if (females.Length > 1)
+            {
+                partner = females[1];
+            }
+
+            LoadPairBones(females[0], partner);
+            currentFemaleTargetType = target;
+            vibratorPoint = target == femaleTargetType.VIBRATOR ? FindVibrator(females[0]) : null;
+            animationChanged = false;
+            updateRobotPosition = true;
+            Logger.LogInfo("Contact bone: " + ContactBoneName(target));
+        }
+
+        void LoadPairBones(ChaControl female, ChaControl partner)
+        {
+            Transform[] bones = female.GetComponentsInChildren<Transform>();
+            femaleHip = FindBone(bones, "cf_J_Kosi02");
+            femaleVagina = FindBone(bones, "cf_J_Kokan");
+            femaleAnus = FindBone(bones, "cf_J_Ana");
+            femaleMouth = FindBone(bones, "cf_J_MouthCavity");
+            femaleMouthLeft = FindBone(bones, "cf_J_Mouth_L");
+            femaleMouthRight = FindBone(bones, "cf_J_Mouth_R");
+            femaleMiddleBreastsLeft = FindBone(bones, "cf_J_Mune02_L");
+            femaleMiddleBreastsRight = FindBone(bones, "cf_J_Mune02_R");
+            femaleBreasts = FindBone(bones, "cf_J_Mune00");
+            LoadHands(female);
+            partnerMouth = partner == null ? null : FindMouth(partner.GetComponentsInChildren<Transform>());
+        }
+
+        static Transform FindMouth(Transform[] bones)
+        {
+            string[] names = { "cf_J_MouthCavity", "cm_J_MouthCavity", "cf_J_Mouth_L", "cm_J_Head", "N_Head", "cf_J_Head" };
+            for (int i = 0; i < names.Length; i++)
+            {
+                Transform bone = FindBone(bones, names[i]);
+                if (bone != null)
+                {
+                    return bone;
+                }
+            }
+
+            return null;
+        }
+
+        Transform FindVibrator(ChaControl female)
+        {
+            Transform found = FindNamed(female.GetComponentsInChildren<Transform>(true));
+            if (found == null && hScene != null)
+            {
+                found = FindNamed(hScene.GetComponentsInChildren<Transform>(true));
+            }
+
+            if (found == null && femaleAnus != null)
+            {
+                int count = femaleAnus.childCount;
+                for (int i = 0; i < count; i++)
+                {
+                    Transform child = femaleAnus.GetChild(i);
+                    if (child != null && !child.name.StartsWith("cf_J_") && !child.name.StartsWith("cm_J_") && !child.name.StartsWith("N_"))
+                    {
+                        found = child;
+                        break;
+                    }
+                }
+            }
+
+            Logger.LogInfo(found == null ? "Vibrator object was not found." : "Vibrator object: " + found.name);
+            return found;
+        }
+
+        static Transform FindNamed(Transform[] bones)
+        {
+            if (bones == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] == null)
+                {
+                    continue;
+                }
+
+                string n = bones[i].name.ToLowerInvariant();
+                if (n.StartsWith("cf_j_") || n.StartsWith("cm_j_") || n.StartsWith("n_"))
+                {
+                    continue;
+                }
+
+                if (n.Contains("vib") || n.Contains("denma") || n.Contains("rotor") || n.Contains("vibe"))
+                {
+                    return bones[i];
+                }
+            }
+
+            return null;
+        }
+
+        bool TryMeasurePair(out float raw)
+        {
+            raw = 0f;
+            Vector3 origin;
+            Vector3 mover;
+            if (!TryPairPoints(out origin, out mover))
+            {
+                return false;
+            }
+
+            float span = 0.12f;
+            if (femaleHip != null && femaleVagina != null)
+            {
+                float body = Vector3.Distance(femaleHip.position, femaleVagina.position);
+                if (body > 0.02f)
+                {
+                    span = body;
+                }
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.VIBRATOR && vibratorPoint != null && femaleAnus != null && vibratorPoint.IsChildOf(femaleAnus))
+            {
+                raw = vibratorPoint.localPosition.magnitude / span;
+            }
+            else
+            {
+                raw = Vector3.Distance(mover, origin) / span;
+            }
+
+            return true;
+        }
+
+        bool TryPairPoints(out Vector3 origin, out Vector3 mover)
+        {
+            origin = Vector3.zero;
+            mover = Vector3.zero;
+            Vector3 mouth = MouthPoint();
+            if (currentFemaleTargetType == femaleTargetType.KISS)
+            {
+                if (partnerMouth == null || (femaleMouth == null && femaleMouthLeft == null))
+                {
+                    return false;
+                }
+
+                origin = partnerMouth.position;
+                mover = mouth;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.HANDVAGINA)
+            {
+                return HandNear(femaleVagina, out origin, out mover);
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.MOUTHVAGINA)
+            {
+                if (femaleVagina == null || (femaleMouth == null && femaleMouthLeft == null))
+                {
+                    return false;
+                }
+
+                origin = femaleVagina.position;
+                mover = mouth;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.MOUTHANUS)
+            {
+                if (femaleAnus == null || (femaleMouth == null && femaleMouthLeft == null))
+                {
+                    return false;
+                }
+
+                origin = femaleAnus.position;
+                mover = mouth;
+                return true;
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.HANDBREAST)
+            {
+                if (femaleMiddleBreastsLeft == null || femaleMiddleBreastsRight == null)
+                {
+                    return false;
+                }
+
+                return HandNear((femaleMiddleBreastsLeft.position + femaleMiddleBreastsRight.position) * 0.5f, out origin, out mover);
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.HANDHIP)
+            {
+                return HandNear(femaleHip, out origin, out mover);
+            }
+
+            if (currentFemaleTargetType == femaleTargetType.VIBRATOR)
+            {
+                if (femaleAnus == null || vibratorPoint == null)
+                {
+                    return false;
+                }
+
+                origin = femaleAnus.position;
+                mover = vibratorPoint.position;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool HandNear(Transform place, out Vector3 origin, out Vector3 mover)
+        {
+            origin = Vector3.zero;
+            mover = Vector3.zero;
+            if (place == null)
+            {
+                return false;
+            }
+
+            return HandNear(place.position, out origin, out mover);
+        }
+
+        bool HandNear(Vector3 place, out Vector3 origin, out Vector3 mover)
+        {
+            origin = place;
+            mover = Vector3.zero;
+            Transform hand = ClosestTo(place, femaleHandLeft, femaleHandRight, femaleMiddleFingerLeft, femaleMiddleFingerRight, femaleRingFingerLeft, femaleRingFingerRight);
+            if (hand == null)
+            {
+                return false;
+            }
+
+            mover = hand.position;
+            return true;
+        }
+
+        Vector3 MouthPoint()
+        {
+            if (femaleMouth != null)
+            {
+                return femaleMouth.position;
+            }
+
+            if (femaleMouthLeft != null && femaleMouthRight != null)
+            {
+                return (femaleMouthLeft.position + femaleMouthRight.position) * 0.5f;
+            }
+
+            if (femaleMouthLeft != null)
+            {
+                return femaleMouthLeft.position;
+            }
+
+            return Vector3.zero;
+        }
+
+        static Transform ClosestTo(Vector3 point, params Transform[] bones)
+        {
+            Transform best = null;
+            float bestDistance = float.MaxValue;
+            if (bones == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] == null)
+                {
+                    continue;
+                }
+
+                float distance = (bones[i].position - point).sqrMagnitude;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = bones[i];
+                }
+            }
+
+            return best;
+        }
+
+        void StopStroke()
+        {
+            currentFemaleTargetType = femaleTargetType.NONE;
+            updateRobotPosition = false;
+            animationChanged = false;
+            Logger.LogInfo("Contact bone: none");
+            if (handy != null)
+            {
+                handy.ResetStream();
+            }
+        }
+
+        static string ContactBoneName(femaleTargetType target)
+        {
+            if (target == femaleTargetType.NONE)
+            {
+                return "none";
+            }
+
+            if (target == femaleTargetType.KISS)
+            {
+                return "kiss";
+            }
+
+            if (target == femaleTargetType.HANDVAGINA)
+            {
+                return "fingers";
+            }
+
+            if (target == femaleTargetType.MOUTHVAGINA || target == femaleTargetType.MOUTHANUS)
+            {
+                return "mouth";
+            }
+
+            if (target == femaleTargetType.HANDBREAST)
+            {
+                return "breast";
+            }
+
+            if (target == femaleTargetType.HANDHIP)
+            {
+                return "hand";
+            }
+
+            if (target == femaleTargetType.VIBRATOR)
+            {
+                return "vibrator";
+            }
+
+            if (target == femaleTargetType.ORAL || target == femaleTargetType.ORALSWAP)
+            {
+                return "mouth";
+            }
+
+            if (target == femaleTargetType.ANAL)
+            {
+                return "anus";
+            }
+
+            if (target == femaleTargetType.BREASTS)
+            {
+                return "breasts";
+            }
+
+            if (target == femaleTargetType.LEFTHAND || target == femaleTargetType.RIGHTHAND || target == femaleTargetType.RIGHTHANDSWAP)
+            {
+                return "hand";
+            }
+
+            if (target == femaleTargetType.FOOT)
+            {
+                return "foot";
+            }
+
+            if (target == femaleTargetType.INTERCRURAL || target == femaleTargetType.INTERCRURALSWAP)
+            {
+                return "thighs";
+            }
+
+            return "vagina";
+        }
+
+        void SendHandyStroke(float stroke)
+        {
+            liveRaw = stroke;
+            if (handy == null || !handy.IsConnected)
+            {
+                return;
+            }
+
+            if (stroke < 0.0f)
+            {
+                stroke = 0.0f;
+            }
+            else if (stroke > 1.0f)
+            {
+                stroke = 1.0f;
+            }
+
+            float now = Time.realtimeSinceStartup;
+            float dt = now - strokeLimitAt;
+            if (dt <= 0.0f || dt > 0.05f)
+            {
+                dt = 0.05f;
+            }
+
+            if (!haveStrokeLimit)
+            {
+                strokeLimited = stroke;
+                haveStrokeLimit = true;
+            }
+
+            float maxStep = 1.6f * dt;
+            float delta = stroke - strokeLimited;
+            if (delta > maxStep)
+            {
+                delta = maxStep;
+            }
+            else if (delta < -maxStep)
+            {
+                delta = -maxStep;
+            }
+
+            strokeLimited += delta;
+            strokeLimitAt = now;
+            stroke = strokeLimited;
+
+            if (!haveStrokeCenter)
+            {
+                strokeCenter = stroke;
+                haveStrokeCenter = true;
+            }
+            else
+            {
+                float follow = 1.0f - Mathf.Exp(-dt / 1.5f);
+                strokeCenter += (stroke - strokeCenter) * follow;
+            }
+
+            float gain = robotL0Multiplier != null ? robotL0Multiplier.Value : 1.0f;
+            stroke = strokeCenter + ((stroke - strokeCenter) * gain);
+            if (stroke < 0.0f)
+            {
+                stroke = 0.0f;
+            }
+            else if (stroke > 1.0f)
+            {
+                stroke = 1.0f;
+            }
+
+            if (handyInvertStroke.Value)
+            {
+                stroke = 1.0f - stroke;
+            }
+
+            handy.ReportMotion(stroke * 100.0f);
+            liveSent = (int)Math.Round(stroke * 100.0f);
         }
 
     }

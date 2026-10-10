@@ -1,158 +1,250 @@
-# HS2_SexRobotController
-**Honey Select 2 Sex Robot Controller Plugin v1.7**
+# HS2_HandyController
 
-**Main configuration menu accessed by hitting F1 and then clicking the Plugin settings button**
+Honey Select 2 BepInEx plugin, version 1.48. It drives The Handy from the motion in an H scene.
 
-![plugin](https://user-images.githubusercontent.com/93683226/141469348-13a16e15-cbf2-45cc-9ec7-334a3e93203e.png)
+Repository: https://github.com/morph10101927/HS2_HandyRobotController
 
+The plugin reads the animation name, picks the body part that scene uses, and streams that motion to the Handy. Inserted or touching is the bottom of the stroke. Withdrawn or apart is the top. The pose is held back slightly so the picture meets the sleeve.
 
-**Quick access buttons (works in VR) to connect / disconnect your sex robot and to increase / decrease the stroke multiplier**
+This build does not use a serial port, COM settings, or T-code.
 
-![pluginmenu](https://user-images.githubusercontent.com/93683226/141469532-d0db17df-e333-477b-b0db-08027204de6f.png)
+## Install
 
+Copy `HS2_HandyController.dll` to:
 
-**Pressing the hotkeys or the quick access buttons to connect / disconnect your sex robot and to increase / decrease the stroke multiplier show feedback text when pressed (especially helpful in VR)**
+`BepInEx/plugins/HS2_HandyController/HS2_HandyController.dll`
 
-![buttonfeedback](https://user-images.githubusercontent.com/93683226/141486554-17f9b57a-e50f-435d-9612-085e2722fa70.png)
+The game needs BepInEx 5. The Handy needs to be on, and you need the device connection key from the Handy app. You do not enter an application key.
 
-This plugin outputs the positional data from a total of 100 (currently) of the 'HScenes' (sex scenes) in Honey Select 2 with full 6 degrees of freedom (6DOF) in a simple text format known as T-Code (Toy-Code) which is then sent over a serial link (COM port) to drive an open source sex robot (OSR2, OSR2+, SR6, etc).
+## Connect
 
-The 6 total degrees of freedom are:
-- L0 (X) Up/Down
-- L1 (Y) Forward/Backward
-- L2 (Z) Left/Right
-- R0 (RX) Twist
-- R1 (RY) Roll
-- R2 (RZ) Pitch
+1. Start the game.
+2. Press F1 and open Plugin settings.
+3. Open HS2_HandyController.
+4. Paste the connection key. It is saved and loaded the next time the game starts.
+5. Press Connect.
 
-The male's penis in a given HScene is always aligned with the L0 (X) Up/Down axis, and depending on the HScene/animation in Honey Select 2, 3+ specific 'bones' of the female's vagina, anus, breasts, mouth, or hands are used to calculate and export the necessary 6DOF information to drive the sex robot.
+If the Handy was connected the last time you closed the game, it connects again after the game finishes loading.
 
-The T-Code format and open source sex robots (OSR2, OSR2+, SR6) were all created/developed by TempestVR. You can find the full/free open sourced OSR2 here: https://www.patreon.com/posts/osr2-1-year-47041804
+Settings are stored in `BepInEx/config/hs2robotics.HS2SexRobotController.cfg`.
 
-## Supported Scenes In Honey Select 2
+The game config menu also has Connect Handy, Disconnect Handy, and stroke multiplier buttons. Those work in VR.
 
-#### Honey Select 2 Service HScene Category
-|Animation Name|Female Target Type|Supported|
-|---|---|---|
-|Blowjob|ORAL|Yes|
-|Handjob|LEFTHAND|Yes|
-|Glans Tease|(in progress)|No|
-|Boobjob|BREASTS|Yes|
-|Licking Boobjob|BREASTS|Yes|
-|Sucking Boobjob|BREASTS|Yes|
-|Exhausted Handjob|RIGHTHAND|Yes|
-|Exhausted Blowjob|ORAL|Yes|
-|Standing Handjob|RIGHTHAND|Yes|
-|No-Hands Tip Licking|(in progress)|No|
-|No-Hands Blowjob|ORAL|Yes|
-|Deepthroat|ORAL|Yes|
-|Standing Boobjob|BREASTS|Yes|
-|Stand. Lick. Boobjob|BREASTS|Yes|
-|Restrained Blowjob|ORAL|Yes|
-|Forced Handjob|RIGHTHAND|Yes|
-|Irrumatio|ORAL|Yes|
-|Chair Handjob|LEFTHAND|Yes|
-|Sit. No-Hand Blowjob|ORAL|Yes|
-|Sitting Boobjob|BREASTS|Yes|
-|Sitting Licking Boobjob|BREASTS|Yes|
-|Wall-Trapped Blowjob|ORAL|Yes|
-|Crouching Blowjob|ORAL|Yes|
-|Desk Handjob|RIGHTHAND|Yes|
-|Behind Handjob|LEFTHAND|Yes|
-|Sleeping Boobjob|BREASTS|Yes|
-|Wall Irramatio|ORAL|Yes|
-|Chair Irramatio|ORAL|Yes|
-|Pet Blowjob|ORAL|Yes|
+## Controls
 
-#### Honey Select 2 Insert HScene Category
-|Animation Name|Female Target Type|Supported|
-|---|---|---|
-|Missionary|VAGINAL|Yes|
-|Breast Grope Missionary|VAGINAL|Yes|
-|Doggy|VAGINAL|Yes|
-|Kneeling Behind|VAGINAL|Yes|
-|Spooning|VAGINAL|Yes|
-|Cowgirl|VAGINAL|Yes|
-|Chest Grope Cowgirl|VAGINAL|Yes|
-|Reverse Cowgirl|VAGINAL|Yes|
-|Piledriver Missionary|VAGINAL|Yes|
-|Bent Missionary|VAGINAL|Yes|
-|Double Decker|VAGINAL|Yes|
-|Anal Missionary|ANAL|Yes|
-|Anal Doggy|ANAL|Yes|
-|Floor Bondage Miss.|VAGINAL|Yes|
-|Forced Missionary|VAGINAL|Yes|
-|Standing|VAGINAL|Yes|
-|Standing Behind|VAGINAL|Yes|
-|Thrust Behind|VAGINAL|Yes|
-|Lifting|VAGINAL|Yes|
-|Reverse Lifting|VAGINAL|Yes|
-|Thighjob|INTERCRURAL|Yes|
-|Stockade|VAGINAL|Yes|
-|Wall-Facing Behind|VAGINAL|Yes|
-|Wall-Facing Anal|ANAL|Yes|
-|Chair Sitting Behind|VAGINAL|Yes|
-|Anal Doggy on Chair|ANAL|Yes|
-|Desk Missionary|VAGINAL|Yes|
-|Desk on Side|VAGINAL|Yes|
-|Desk Doggy|ANAL|Yes|
-|Against Counter Behind|VAGINAL|Yes|
-|Wall-Trapped Doggy|VAGINAL|Yes|
-|Crouch Insertion|VAGINAL|Yes|
-|Delivery Table Insert|VAGINAL|Yes|
-|Hanging|VAGINAL|Yes|
-|Tied Up Insertion|VAGINAL|Yes|
-|Lying Doggystyle|VAGINAL|Yes|
-|Anal Piledriver Miss.|ANAL|Yes|
-|Face to Face Sitting|VAGINAL|Yes|
-|Chest Grope Sit Behind|VAGINAL|Yes|
-|Sitting Hugging|VAGINAL|Yes|
-|Restrained Standing|VAGINAL|Yes|
-|Clinging Lifting|VAGINAL|Yes|
-|Wall-Pressed Behind|VAGINAL|Yes|
-|Pet Sex|VAGINAL|Yes|
-|Mating Press|VAGINAL|Yes|
+| Control | Action |
+|---|---|
+| Connect button, or Left Shift + S | Connect or disconnect the Handy |
+| Z, or Stroke Multiplier + | Increase the stroke multiplier |
+| X, or Stroke Multiplier - | Decrease the stroke multiplier |
 
-#### Honey Select 2 Woman-led HScene Category
-|Animation Name|Female Target Type|Supported|
-|---|---|---|
-|Face Sit Cunnilingus|(in progress)|No|
-|Nipple Licking Blowjob|RIGHTHAND|Yes|
-|Rimjob + Handjob|RIGHTHAND|Yes|
-|Standing Footjob|(in progress)|No|
-|Sitting Footjob|(in progress)|No|
-|All Fours Handjob|RIGHTHAND|Yes|
-|Restrained Blowjob|ORAL|Yes|
-|Chair Restraint Footjob|(in progress)|No|
-|Cowgirl|VAGINAL|Yes|
-|Reverse Cowgirl|VAGINAL|Yes|
-|Reverse Piledriver|VAGINAL|Yes|
-|Cowgirl Intercrural|INTERCRURAL|Yes|
-|Handjob Intercrural|INTERCRURAL|Yes|
-|Chair Intercrural|INTERCRURAL|Yes|
-|Piledriver Rev. Cowgirl|VAGINAL|Yes|
-|Standing|VAGINAL|Yes|
-|Anal Reverse Cowgirl|ANAL|Yes|
-|Male Restrained Stand|VAGINAL|Yes|
-|Chair Restraint Sitting|VAGINAL|Yes|
+The stroke multiplier starts at 1, which keeps the measured motion. A higher value widens that motion, and the command sent to the Handy stays between 0 and 1.
 
-#### Honey Select 2 Female Group HScene Category
-|Animation Name|Female Target Type|Supported|
-|---|---|---|
-|W Cowgirl|VAGINAL|Yes|
-|W Cowgirl (swap)|VAGINALSWAP|Yes|
-|W Blowjob|ORAL|Yes|
-|W Blowjob (swap)|ORALSWAP|Yes|
-|Intercrural Sandwich|INTERCRURAL|Yes|
-|Interc. Sandwich (swap)|INTERCRURAL|Yes|
-|Insertion + Fingering|VAGINAL|Yes|
-|Insert. + Fing. (swap)|VAGINALSWAP|Yes|
-|W Handjob Licking|RIGHTHANDSWAP|Yes|
-|W Handjob Lick. (swap)|RIGHTHAND|Yes|
-|Sitting+Cunilingus|VAGINAL|Yes|
-|Sit+Cunilingus (swap)|VAGINALSWAP|Yes|
+Invert Stroke flips the direction. Leave it off for the normal Handy direction: 0 is the bottom and 100 is the top.
 
-#### Honey Select 2 Special HScene Category
-|Animation Name|Female Target Type|Supported|
-|---|---|---|
-|69|ORAL|Yes|
+## Scene delay
+
+The Handy needs the stroke before the moment it should arrive, so the sleeve can already be there when the picture shows that pose. Each motion point is sent about 0.45 seconds ahead. If a point would otherwise reach the device too late, that lead grows, up to another 0.40 seconds. The scene delay is that same amount, usually 0.45 seconds and at most about 0.85 seconds.
+
+While the Handy is connected in an H scene, the plugin reads the characters at their true pose and sends that motion to the device. It then holds the picture back by the scene delay. The sleeve is playing the pose from that short time ago, so the picture and the sleeve meet.
+
+The animation itself keeps its real time. At the start of the next frame the characters are put back on that time, the scene advances, and the picture is held back again after the motion is read. You see the delayed pose. The device follows the undelayed one.
+
+The hold is not applied while a character is changing clips, and it lets go if a clip stops advancing. Choosing another scene and starting a scene with the scroll wheel still work. When the Handy is disconnected, the scene plays at normal time.
+
+## How a scene is measured
+
+The animation name selects one contact.
+
+Penis scenes measure that contact along the penis:
+
+| Contact | What is measured |
+|---|---|
+| Mouth | Mouth on the penis |
+| Left hand or right hand | That hand on the penis |
+| Breasts | Breasts on the penis |
+| Vagina | Vagina |
+| Anus | Anus |
+| Thighs | Thighs |
+| Foot | Foot on the penis |
+
+Scenes without a penis measure the two parts that act uses. Together is the bottom of the stroke, and apart is the top.
+
+| Contact | What is measured |
+|---|---|
+| Kiss | The two mouths |
+| Hand on breasts | A hand against the breasts |
+| Fingers | A hand at the vagina |
+| Mouth at vagina | Mouth at the vagina |
+| Mouth at anus | Mouth at the anus |
+| Hand on hip | A hand against the hip |
+| Vibrator | The vibrator at the anus |
+
+A swap scene uses the second woman.
+
+## Service
+
+| Animation | Contact |
+|---|---|
+| Blowjob | Mouth |
+| Handjob | Left hand |
+| Glans Tease | Mouth |
+| Boobjob | Breasts |
+| Licking Boobjob | Breasts |
+| Sucking Boobjob | Breasts |
+| Exhausted Handjob | Right hand |
+| Exhausted Blowjob | Mouth |
+| Standing Handjob | Right hand |
+| No-Hands Tip Licking | Mouth |
+| No-Hands Blowjob | Mouth |
+| Deepthroat | Mouth |
+| Standing Boobjob | Breasts |
+| Stand. Lick. Boobjob | Breasts |
+| Restrained Blowjob | Mouth |
+| Forced Handjob | Right hand |
+| Irrumatio | Mouth |
+| Chair Handjob | Left hand |
+| Sit. No-Hand Blowjob | Mouth |
+| Sitting Boobjob | Breasts |
+| Sitting Licking Boobjob | Breasts |
+| Wall-Trapped Blowjob | Mouth |
+| Crouching Blowjob | Mouth |
+| Desk Handjob | Right hand |
+| Behind Handjob | Left hand |
+| Sleeping Boobjob | Breasts |
+| Wall Irramatio | Mouth |
+| Chair Irramatio | Mouth |
+| Pet Blowjob | Mouth |
+| Forceful BJ | Mouth |
+| Sitting Handjob | Left hand |
+| Titjob | Breasts |
+| Tip Lick (No Hands) | Mouth |
+| Sitting Titjob | Breasts |
+| Stockade Femdom BJ | Mouth |
+
+## Foreplay
+
+| Animation | Contact |
+|---|---|
+| Kiss | Kiss |
+| Standing Kiss | Kiss |
+| Breast Play | Hand on breasts |
+| Breast Massage (Behind) | Hand on breasts |
+| Squatting Breast Massage | Hand on breasts |
+| Kiss Grope | Hand on breasts |
+| Fingering | Fingers |
+| Reclining Masturbation | Fingers |
+| All-Fours Foreplay | Fingers |
+| Cunnilingus | Mouth at vagina |
+| Standing Cunnilingus | Mouth at vagina |
+| Face Sit Cunnilingus | Mouth at vagina |
+| Rimjob | Mouth at anus |
+| Anal Vibrator | Vibrator |
+| Desk Spank | Hand on hip |
+| Chair Spank | Hand on hip |
+
+## Insert
+
+| Animation | Contact |
+|---|---|
+| Missionary | Vagina |
+| Breast Grope Missionary | Vagina |
+| Doggy | Vagina |
+| Kneeling Behind | Vagina |
+| Spooning | Vagina |
+| Cowgirl | Vagina |
+| Chest Grope Cowgirl | Vagina |
+| Reverse Cowgirl | Vagina |
+| Piledriver Missionary | Vagina |
+| Bent Missionary | Vagina |
+| Double Decker | Vagina |
+| Anal Missionary | Anus |
+| Anal Doggy | Anus |
+| Floor Bondage Miss. | Vagina |
+| Forced Missionary | Vagina |
+| Standing | Vagina |
+| Standing Behind | Vagina |
+| Thrust Behind | Vagina |
+| Lifting | Vagina |
+| Reverse Lifting | Vagina |
+| Thighjob | Thighs |
+| Stockade | Vagina |
+| Wall-Facing Behind | Vagina |
+| Wall-Facing Anal | Anus |
+| Chair Sitting Behind | Vagina |
+| Anal Doggy on Chair | Anus |
+| Desk Missionary | Vagina |
+| Desk on Side | Vagina |
+| Desk Doggy | Anus |
+| Against Counter Behind | Vagina |
+| Wall-Trapped Doggy | Vagina |
+| Crouch Insertion | Vagina |
+| Delivery Table Insert | Vagina |
+| Hanging | Vagina |
+| Tied Up Insertion | Vagina |
+| Lying Doggystyle | Vagina |
+| Anal Piledriver Miss. | Anus |
+| Face to Face Sitting | Vagina |
+| Chest Grope Sit Behind | Vagina |
+| Sitting Hugging | Vagina |
+| Restrained Standing | Vagina |
+| Clinging Lifting | Vagina |
+| Wall-Pressed Behind | Vagina |
+| Pet Sex | Vagina |
+| Mating Press | Vagina |
+| Domination Reverse Cowgirl | Vagina |
+| Stockade Femdom Sex | Vagina |
+| Side | Vagina |
+| Standing Doggy | Vagina |
+| Standing Missionary | Vagina |
+| Standing Wall Doggy | Vagina |
+| Table Missionary | Vagina |
+| Missionary Press | Vagina |
+| Counter Doggy | Vagina |
+| Squatting Sex | Vagina |
+| Suspended Sex | Vagina |
+| Standing Tied | Vagina |
+| Standing Squeeze | Vagina |
+
+## Woman-led
+
+| Animation | Contact |
+|---|---|
+| Nipple Licking Blowjob | Right hand |
+| Rimjob + Handjob | Right hand |
+| Standing Footjob | Foot |
+| Sitting Footjob | Foot |
+| All Fours Handjob | Right hand |
+| Chair Restraint Footjob | Foot |
+| Reverse Piledriver | Vagina |
+| Cowgirl Intercrural | Thighs |
+| Handjob Intercrural | Thighs |
+| Chair Intercrural | Thighs |
+| Piledriver Rev. Cowgirl | Vagina |
+| Anal Reverse Cowgirl | Anus |
+| Male Restrained Stand | Vagina |
+| Chair Restraint Sitting | Vagina |
+
+Cowgirl, Reverse Cowgirl, and Standing in this category use the same contacts as the insert list.
+
+## Group and special
+
+| Animation | Contact |
+|---|---|
+| W Cowgirl | Vagina |
+| W Cowgirl (swap) | Second woman's vagina |
+| W Blowjob | Mouth |
+| W Blowjob (swap) | Second woman's mouth |
+| Intercrural Sandwich | Thighs |
+| Interc. Sandwich (swap) | Second woman's thighs |
+| Insertion + Fingering | Vagina |
+| Insert. + Fing. (swap) | Second woman's vagina |
+| W Handjob Licking | Second woman's right hand |
+| W Handjob Lick. (swap) | Right hand |
+| Sitting+Cunilingus | Vagina |
+| Sit+Cunilingus (swap) | Second woman's vagina |
+| 69 | Mouth |
+
+## Build
+
+The project file is `HS2_SexRobotController/HS2_SexRobotController.csproj`. A Release build writes `HS2_HandyController.dll`.
