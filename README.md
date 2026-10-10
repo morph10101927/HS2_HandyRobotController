@@ -1,5 +1,3 @@
-<img width="1255" height="927" alt="image" src="https://github.com/user-attachments/assets/ba7d1fc2-e0a0-4e03-85ca-241e0a2f4908" /># HS2_HandyController
-
 Honey Select 2 BepInEx plugin, version 1.48. It drives The Handy from the motion in an H scene.
 
 Repository: https://github.com/morph10101927/HS2_HandyRobotController
