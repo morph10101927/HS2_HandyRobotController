@@ -1,4 +1,4 @@
-# HS2_HandyController
+<img width="1255" height="927" alt="image" src="https://github.com/user-attachments/assets/ba7d1fc2-e0a0-4e03-85ca-241e0a2f4908" /># HS2_HandyController
 
 Honey Select 2 BepInEx plugin, version 1.48. It drives The Handy from the motion in an H scene.
 
@@ -15,6 +15,10 @@ Copy `HS2_HandyController.dll` to:
 `BepInEx/plugins/HS2_HandyController/HS2_HandyController.dll`
 
 The game needs BepInEx 5. The Handy needs to be on, and you need the device connection key from the Handy app. You do not enter an application key.
+
+<img width="1255" height="927" alt="image" src="https://github.com/user-attachments/assets/51a81d28-070f-40ce-b6d2-87df4cd5251f" />
+<img width="417" height="320" alt="image" src="https://github.com/user-attachments/assets/b0680724-aa3d-4a6a-8246-0addd4ae1a4d" />
+
 
 ## Connect
 
